@@ -27,3 +27,9 @@ javaOptions in run ++= Seq(
   "-Dcom.sun.management.jmxremote.ssl=false",
   "-XX:+UnlockCommercialFeatures",
   "-XX:+FlightRecorder")
+
+assemblyJarName in assembly := "SDAJClusterNode.jar"
+
+test in assembly := {}
+
+mainClass in assembly := Some("it.unipd.trluca.arsort.Main")
