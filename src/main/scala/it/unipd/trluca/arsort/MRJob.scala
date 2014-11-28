@@ -1,17 +1,15 @@
 package it.unipd.trluca.arsort
 
 import akka.actor.{Props, Actor}
-import akka.cluster.Cluster
+import akka.cluster.Member
 import akka.pattern.ask
-import akka.util.Timeout
 
-
+import scala.collection.SortedSet
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class JobConstants(iterations:Int, min:Int, max:Int, clusterSize:Int)
+case class JobConstants(iterations:Int, mmm:Int, clusterMembers:SortedSet[Member])
 
 object MRJob {
   def insert[K2,V2](a:mutable.HashMap[K2,ArrayBuffer[V2]], k:K2, v:V2) {
@@ -28,11 +26,11 @@ object MRJob {
 }
 
 trait MRJob[K1,V1,K2,V2,K3,V3] {
-  self: Actor =>
+  this: Actor =>
   def baseReceive:Receive = {
     case StartJob(j) =>
       jobC = j
-      init()
+      results = Array.fill(jobC.clusterMembers.size)(new mutable.HashMap[K2, ArrayBuffer[V2]])
       sender() ! Done
 
     case ExecSource =>
@@ -46,7 +44,7 @@ trait MRJob[K1,V1,K2,V2,K3,V3] {
 
       //Transmit data to all nodes
       val resDisp = context.actorOf(Props[ResultDispatcher[K2,V2]])
-      val response = resDisp ? SendResult(Cluster(context.system).state.members, results)
+      val response = resDisp ? SendResult(jobC.clusterMembers, results)
       response map { Done =>
         orSender ! Done
       }
@@ -76,12 +74,8 @@ trait MRJob[K1,V1,K2,V2,K3,V3] {
 
   var src: Iterable[(K1, V1)] = null
   var results:Array[mutable.HashMap[K2,ArrayBuffer[V2]]] = null
-  val mSink = (k:K2,v:V2) => {MRJob.insert[K2, V2](results(partition(k) % jobC.clusterSize), k, v)}
+  val mSink = (k:K2,v:V2) => {MRJob.insert[K2, V2](results(partition(k) % jobC.clusterMembers.size), k, v)}
   val output:ArrayBuffer[(K3,V3)] = ArrayBuffer.empty
-
-  def init():Unit = {
-    results = Array.fill(jobC.clusterSize)(new mutable.HashMap[K2, ArrayBuffer[V2]])
-  }
 
 
   def partition(k:K2):Int

@@ -1,6 +1,6 @@
 package it.unipd.trluca.arsort
 
-import akka.actor.{ActorRef, Props, ActorLogging, Actor}
+import akka.actor.{Props, ActorLogging, Actor}
 import akka.cluster.Cluster
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
@@ -20,27 +20,26 @@ import it.unipd.trluca.arsort.Messages._
   var originalArray: Array[Int] = Array.empty[Int]
   var sortedArray: Array[(Int,V2Address)] = null
 
-  var sinkActor:ActorRef = null
-  
-  def receive = localReceive orElse baseReceive
+  override def receive = localReceive orElse baseReceive
   def localReceive:Receive = {
     case CreateBlock(size) =>
-      originalArray = Array.fill(size)(Random.nextInt(10000))
-      log.info("Contains {}", originalArray.mkString(","))
+      originalArray = Array.fill(size)(Random.nextInt(10000))//TODO check range
 
       if (Cluster(context.system).state.members.head.address == Cluster(context.system).selfAddress)
-        sinkActor = context.actorOf(Props[SinkReceiver], "sinkreceiver")
+        context.actorOf(Props[SinkReceiver], "sinkreceiver")
+
+      log.info("Contains {}", originalArray.mkString(","))
+      sender() ! Done
 
     case PrintBlock => println("OriginalArray " + originalArray.mkString(","))
 
     case MinEMax => sender() ! MinMaxAggregator.minMax(originalArray)
 
-    case a:Array[(Int, Seq[(Int, V2Address)])] => sortAndRedistribute(a)
+    case SinkCompleted(a) => sortAndRedistribute(a)
 
     case SortedArray(a)=> sortedArray = a
       log.info("SortedArray " + sortedArray.mkString(","))
   }
-
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {
     val ss = a.sortWith(_._1 < _._1)
@@ -87,9 +86,8 @@ import it.unipd.trluca.arsort.Messages._
 
   override def mapper(k: Int, v: Int, s: (Int, (Int, V2Address)) => Unit): Unit = {
     val adds = Cluster(context.system).selfAddress.toString
-    if (jobC.clusterSize > 1) {
-      val span = jobC.max - jobC.min
-      s(v / (span/ (jobC.clusterSize-1)), (v, V2Address(adds, k)))
+    if (jobC.clusterMembers.size > 1) {
+      s(v / (jobC.mmm/ (jobC.clusterMembers.size-1)), (v, V2Address(adds, k)))
     } else {
       s(0, (v,V2Address(adds, k)))
     }

@@ -1,33 +1,31 @@
 package it.unipd.trluca.arsort
 
 import akka.actor.{ActorRef, Actor}
-import akka.cluster.Member
+import akka.cluster.{Cluster, Member}
 import akka.contrib.pattern.Aggregator
 
 import scala.collection.SortedSet
 import scala.collection.mutable.ArrayBuffer
 
 case object Done
-case class Command(members:SortedSet[Member], es:EngineStep)
 
 class WorldClock extends Actor with Aggregator {
   val results = ArrayBuffer.empty[Unit]
   var originalSender:ActorRef = null
-  var clusterSize:Int = 0
+  val members = Cluster(context.system).state.members
 
   expectOnce {
-    case c:Command =>
+    case es:EngineStep =>
       originalSender = sender()
-      clusterSize = c.members.size
-      c.members foreach { m =>
-        context.system.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! c.es
+      members foreach { m =>
+        context.system.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! es
       }
   }
 
   val handle = expect {
-    case v =>
-      results += v
-      if (results.size >= clusterSize) processResult()
+    case Done =>
+      results += Done
+      if (results.size >= members.size) processResult()
   }
 
   def processResult() {

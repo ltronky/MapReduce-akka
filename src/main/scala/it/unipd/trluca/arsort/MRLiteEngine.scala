@@ -1,11 +1,8 @@
 package it.unipd.trluca.arsort
 
 import akka.actor.{Props, ActorLogging, Actor}
-import akka.cluster.Cluster
 import akka.pattern.ask
-import akka.util.Timeout
 
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
@@ -19,10 +16,8 @@ case object ExecReduce extends EngineStep
 case object Sink extends EngineStep
 
 
-
 class MRLiteEngine extends Actor with ActorLogging {
   implicit val timeout = ConstStr.MAIN_TIMEOUT
-  val cluster = Cluster(context.system)
 
   var iteration: Int = 0
   var jobC:JobConstants = null
@@ -32,7 +27,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case st:StartJob => jobC = st.jC
       log.info("StartJob")
       val clockAct = context.actorOf(Props[WorldClock])
-      val response = clockAct ? Command(cluster.state.members, st)
+      val response = clockAct ? st
       response map { Done =>
         self ! Continue
       }
@@ -47,7 +42,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case ExecSource =>
       log.info("Source")
       val clockAct = context.actorOf(Props[WorldClock])
-      val response = clockAct ? Command(cluster.state.members, ExecSource)
+      val response = clockAct ? ExecSource
       response map { Done =>
         self ! ExecMap
       }
@@ -55,7 +50,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case ExecMap =>
       log.info("Map")
       val clockAct = context.actorOf(Props[WorldClock])
-      val response = clockAct ? Command(cluster.state.members, ExecMap)
+      val response = clockAct ? ExecMap
       response map { Done =>
         self ! ExecReduce
       }
@@ -63,7 +58,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case ExecReduce =>
       log.info("Reduce")
       val clockAct = context.actorOf(Props[WorldClock])
-      val response = clockAct ? Command(cluster.state.members, ExecReduce)
+      val response = clockAct ? ExecReduce
       response map { Done =>
         self ! Sink
       }
@@ -71,7 +66,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case Sink =>
       log.info("Sink")
       val clockAct = context.actorOf(Props[WorldClock])
-      val response = clockAct ? Command(cluster.state.members, Sink)
+      val response = clockAct ? Sink
       response map { Done =>
         self ! Continue
       }
