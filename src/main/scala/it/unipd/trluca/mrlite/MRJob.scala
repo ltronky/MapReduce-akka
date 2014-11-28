@@ -1,9 +1,9 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor.{Props, Actor}
 import akka.cluster.Member
 import akka.pattern.ask
-import it.unipd.trluca.arsort.aggregators.{SendResult, ResultDispatcher, Done}
+import it.unipd.trluca.mrlite.aggregators.{SendResult, ResultDispatcher, Done}
 
 import scala.collection.SortedSet
 import scala.collection.mutable

@@ -1,10 +1,10 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor._
 import akka.cluster._
 import akka.pattern.ask
 import akka.util.Timeout
-import it.unipd.trluca.arsort.aggregators._
+import it.unipd.trluca.mrlite.aggregators._
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global

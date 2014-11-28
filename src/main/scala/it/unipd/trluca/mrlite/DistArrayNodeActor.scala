@@ -1,8 +1,8 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.cluster.Cluster
-import it.unipd.trluca.arsort.aggregators._
+import it.unipd.trluca.mrlite.aggregators._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
@@ -16,7 +16,7 @@ case class V2Address(address:String, index:Int)
 case class SortedArray(a:Array[(Int, V2Address)])
 
 class DistArrayNodeActor extends Actor with ActorLogging with MRJob [Int,Int,Int,(Int, V2Address),Int,Seq[(Int,V2Address)]] {
-import it.unipd.trluca.arsort.Messages._
+import it.unipd.trluca.mrlite.Messages._
 
   var originalArray: Array[Int] = Array.empty[Int]
   var sortedArray: Array[(Int,V2Address)] = null

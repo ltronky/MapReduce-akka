@@ -1,4 +1,4 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor.{Actor, ActorLogging, Address}
 import akka.cluster.Cluster

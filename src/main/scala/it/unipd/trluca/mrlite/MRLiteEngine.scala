@@ -1,8 +1,8 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.pattern.ask
-import it.unipd.trluca.arsort.aggregators.WorldClock
+import it.unipd.trluca.mrlite.aggregators.WorldClock
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

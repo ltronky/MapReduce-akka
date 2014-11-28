@@ -1,9 +1,9 @@
-package it.unipd.trluca.arsort.aggregators
+package it.unipd.trluca.mrlite.aggregators
 
 import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
-import it.unipd.trluca.arsort.{ConstStr, EngineStep}
+import it.unipd.trluca.mrlite.{ConstStr, EngineStep}
 
 import scala.collection.mutable.ArrayBuffer
 

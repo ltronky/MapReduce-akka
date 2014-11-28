@@ -1,4 +1,4 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.mrlite
 
 import akka.actor.{ActorSystem, Props}
 import com.typesafe.config.ConfigFactory

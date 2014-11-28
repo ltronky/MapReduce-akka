@@ -1,9 +1,9 @@
-package it.unipd.trluca.arsort.aggregators
+package it.unipd.trluca.mrlite.aggregators
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.Member
 import akka.contrib.pattern.Aggregator
-import it.unipd.trluca.arsort.{ConstStr, MapResult, ResReceived}
+import it.unipd.trluca.mrlite.{ConstStr, MapResult, ResReceived}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{SortedSet, mutable}
