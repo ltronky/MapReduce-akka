@@ -1,11 +1,12 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.arsort.aggregators
 
-import akka.actor.{ActorLogging, ActorRef, Actor}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.Member
 import akka.contrib.pattern.Aggregator
+import it.unipd.trluca.arsort.{ConstStr, MapResult, ResReceived}
 
-import scala.collection.{mutable, SortedSet}
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.{SortedSet, mutable}
 
 case class SendResult[K, V](clusterMembers:SortedSet[Member] ,resArray:Array[mutable.HashMap[K,ArrayBuffer[V]]])
 

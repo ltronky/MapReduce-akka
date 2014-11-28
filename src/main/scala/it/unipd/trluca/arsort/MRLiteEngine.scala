@@ -2,6 +2,7 @@ package it.unipd.trluca.arsort
 
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.pattern.ask
+import it.unipd.trluca.arsort.aggregators.WorldClock
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

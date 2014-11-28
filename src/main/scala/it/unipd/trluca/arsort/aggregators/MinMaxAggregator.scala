@@ -1,20 +1,19 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.arsort.aggregators
 
-import akka.actor.{ActorRef, Actor}
-import akka.cluster.{Cluster, Member}
+import akka.actor.{Actor, ActorRef}
+import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
+import it.unipd.trluca.arsort.ConstStr
 import it.unipd.trluca.arsort.Messages.MinEMax
 
-import scala.collection.SortedSet
 import scala.collection.mutable.ArrayBuffer
 
-case object Get
 case object GetMinEMax
 case class MM(min:Int, max:Int)
 
 object MinMaxAggregator {
   def minMax(a: Array[Int]) : MM = {
-    if (a.isEmpty) return MM(100000, -1)//TODO check range
+    if (a.isEmpty) return MM(Int.MaxValue, -1)
     a.foldLeft(MM(a(0), a(0)))
     { case (MM(min, max), e) => MM(math.min(min, e), math.max(max, e))}
   }
@@ -26,7 +25,7 @@ class MinMaxAggregator extends Actor with Aggregator {
   var clusterSize:Int = 0
 
   expectOnce {
-    case Get =>
+    case GetMinEMax =>
       originalSender = sender()
       val members = Cluster(context.system).state.members
       clusterSize = members.size

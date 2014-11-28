@@ -2,11 +2,12 @@ package it.unipd.trluca.arsort
 
 import akka.actor.{Props, ActorLogging, Actor}
 import akka.cluster.Cluster
+import it.unipd.trluca.arsort.aggregators._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object Messages {
-  case class CreateBlock(size: Int)
+  case class CreateBlock(size: Int, valueRange:Int)
   case object PrintBlock
   case object MinEMax
 }
@@ -22,8 +23,8 @@ import it.unipd.trluca.arsort.Messages._
 
   override def receive = localReceive orElse baseReceive
   def localReceive:Receive = {
-    case CreateBlock(size) =>
-      originalArray = Array.fill(size)(Random.nextInt(10000))//TODO check range
+    case CreateBlock(size, valueRange) =>
+      originalArray = Array.fill(size)(Random.nextInt(valueRange))
 
       if (Cluster(context.system).state.members.head.address == Cluster(context.system).selfAddress)
         context.actorOf(Props[SinkReceiver], "sinkreceiver")
@@ -39,6 +40,7 @@ import it.unipd.trluca.arsort.Messages._
 
     case SortedArray(a)=> sortedArray = a
       log.info("SortedArray " + sortedArray.mkString(","))
+      context.system.shutdown() //TODO check shutdown
   }
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {

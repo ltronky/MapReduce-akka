@@ -3,6 +3,7 @@ package it.unipd.trluca.arsort
 import akka.actor.{Props, Actor}
 import akka.cluster.Member
 import akka.pattern.ask
+import it.unipd.trluca.arsort.aggregators.{SendResult, ResultDispatcher, Done}
 
 import scala.collection.SortedSet
 import scala.collection.mutable

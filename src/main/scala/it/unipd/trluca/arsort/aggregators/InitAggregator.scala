@@ -1,13 +1,14 @@
-package it.unipd.trluca.arsort
+package it.unipd.trluca.arsort.aggregators
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
 import it.unipd.trluca.arsort.Messages.CreateBlock
+import it.unipd.trluca.arsort.ConstStr
 
 import scala.collection.mutable.ArrayBuffer
 
-case class InitArray(arraySize:Int)
+case class InitArray(arraySize:Int, valueRange:Int)
 
 class InitAggregator extends Actor with Aggregator {
   val results = ArrayBuffer.empty[Unit]
@@ -15,7 +16,7 @@ class InitAggregator extends Actor with Aggregator {
   var clusterSize:Int = 0
 
   expectOnce {
-    case InitArray(distArraySize) =>
+    case InitArray(distArraySize, valueRange) =>
       val members = Cluster(context.system).state.members
       clusterSize = members.size
       originalSender = sender()
@@ -23,7 +24,7 @@ class InitAggregator extends Actor with Aggregator {
       var rest = distArraySize % clusterSize
       members foreach { member =>
         context.system.actorSelection(member.address + ConstStr.NODE_ACT_NAME) !
-          CreateBlock(portion + (if (rest > 0) 1 else 0))
+          CreateBlock(portion + (if (rest > 0) 1 else 0), valueRange)
         rest -= 1
       }
   }

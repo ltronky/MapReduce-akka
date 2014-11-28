@@ -4,6 +4,7 @@ import akka.actor._
 import akka.cluster._
 import akka.pattern.ask
 import akka.util.Timeout
+import it.unipd.trluca.arsort.aggregators._
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,24 +24,26 @@ class EntryPoint extends Actor with ActorLogging {
   implicit val timeout = ConstStr.MAIN_TIMEOUT
 
   var distArraySize = 0
+  var valueRange = 0
   var mmm:Int = 0
 
   def receive = {
     case SetDistArraySize(config) =>
       distArraySize = config.arraySize
+      valueRange = config.valueRange
       val mL = context.system.actorOf(Props[MemberListener], "memberListener")
       mL ! SetInitClusterSize(config.clusterSize)
 
     case StartExecution =>
       val initAggr = context.actorOf(Props[InitAggregator])
-      val response = initAggr ? InitArray(distArraySize)
+      val response = initAggr ? InitArray(distArraySize, valueRange)
       response map { Done =>
         self ! MinMax
       }
 
     case MinMax =>
       val aggr = context.actorOf(Props[MinMaxAggregator])
-      val response = (aggr ? Get).mapTo[MM]
+      val response = (aggr ? GetMinEMax).mapTo[MM]
       response map { res:MM =>
         mmm = res.max-res.min
         log.info("Min " + res.min.toString + " & Max " + res.max.toString)
