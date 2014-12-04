@@ -1,12 +1,12 @@
 name := """TesiMRLiteScala"""
 
-val akkaVersion = "2.3.6"
+val akkaVersion = "2.3.7"
 
 fork in run := true
 
 version := "0.1"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
 resolvers += Resolver.sonatypeRepo("public")
 
