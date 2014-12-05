@@ -18,7 +18,7 @@ class WorldClock extends Actor with Aggregator {
     case es:EngineStep =>
       originalSender = sender()
       members foreach { m =>
-        context.system.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! es
+        context.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! es
       }
   }
 

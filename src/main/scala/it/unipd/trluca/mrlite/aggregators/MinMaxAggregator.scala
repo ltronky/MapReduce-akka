@@ -30,7 +30,7 @@ class MinMaxAggregator extends Actor with Aggregator {
       val members = Cluster(context.system).state.members
       clusterSize = members.size
       members foreach { m =>
-        context.system.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! MinEMax
+        context.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! MinEMax
       }
   }
 

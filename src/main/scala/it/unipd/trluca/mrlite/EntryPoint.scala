@@ -31,7 +31,7 @@ class EntryPoint extends Actor with ActorLogging {
     case SetDistArraySize(config) =>
       distArraySize = config.arraySize
       valueRange = config.valueRange
-      val mL = context.system.actorOf(Props[MemberListener], "memberListener")
+      val mL = context.actorOf(Props[MemberListener], "memberListener")
       mL ! SetInitClusterSize(config.clusterSize)
 
     case StartExecution =>
