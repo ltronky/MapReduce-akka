@@ -67,7 +67,7 @@ trait MRJob[K1,V1,K2,V2,K3,V3] {
     case _=>
   }
 
-  implicit val timeout = ConstStr.MAIN_TIMEOUT
+  implicit val timeout = Consts.MAIN_TIMEOUT
 
   val mapResRecActor = context.actorOf(Props[MapResultReceiverActor[K2,V2]], "mrra")
 

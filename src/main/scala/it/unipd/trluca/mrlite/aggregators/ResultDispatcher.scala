@@ -3,7 +3,7 @@ package it.unipd.trluca.mrlite.aggregators
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.Member
 import akka.contrib.pattern.Aggregator
-import it.unipd.trluca.mrlite.{ConstStr, MapResult, ResReceived}
+import it.unipd.trluca.mrlite.{Consts, MapResult, ResReceived}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.{SortedSet, mutable}
@@ -14,15 +14,23 @@ class ResultDispatcher[K, V] extends Actor with Aggregator with ActorLogging {
 
   val results = ArrayBuffer.empty[Unit]
   var originalSender:ActorRef = null
-  var clusterSize:Int = 0
+  var expectedResultSize:Int = 0
 
   expectOnce {
     case c:SendResult[K, V] =>
       originalSender = sender()
-      clusterSize = c.clusterMembers.size
+      expectedResultSize = c.clusterMembers.size
       var i = 0
       c.clusterMembers foreach { m =>
-        context.actorSelection(m.address + ConstStr.NODE_ACT_NAME + "/mrra") ! MapResult(c.resArray(i).toMap)
+        val destination = context.actorSelection(m.address + Consts.NODE_ACT_NAME + "/mrra")
+        val rMap = c.resArray(i).toMap
+        rMap.keys foreach { k =>
+          val list = rMap(k).grouped(Consts.CHUNK_SIZE).toList
+          expectedResultSize += (list.size-1)
+          for (i <- 0 until list.size) {
+            destination ! MapResult(k, list(i))
+          }
+        }
         i += 1
       }
   }
@@ -30,7 +38,7 @@ class ResultDispatcher[K, V] extends Actor with Aggregator with ActorLogging {
   val handle = expect {
     case ResReceived =>
       results += ResReceived
-      if (results.size >= clusterSize) processResult()
+      if (results.size >= expectedResultSize) processResult()
   }
 
   def processResult() {

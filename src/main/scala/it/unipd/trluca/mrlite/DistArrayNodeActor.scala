@@ -13,13 +13,13 @@ object Messages {
 }
 
 case class V2Address(address:String, index:Int)
-case class SortedArray(a:Array[(Int, V2Address)])
+case class SortedArray(a:Array[(Int, V2Address)], isComplete:Boolean)
 
 class DistArrayNodeActor extends Actor with ActorLogging with MRJob [Int,Int,Int,(Int, V2Address),Int,Seq[(Int,V2Address)]] {
 import it.unipd.trluca.mrlite.Messages._
 
   var originalArray: Array[Int] = Array.empty[Int]
-  var sortedArray: Array[(Int,V2Address)] = null
+  var sortedArray: Array[(Int,V2Address)] = Array.empty
 
   override def receive = localReceive orElse baseReceive
   def localReceive:Receive = {
@@ -29,18 +29,21 @@ import it.unipd.trluca.mrlite.Messages._
       if (Cluster(context.system).state.members.head.address == Cluster(context.system).selfAddress)
         context.actorOf(Props[SinkReceiver], "sinkreceiver")
 
-      log.info("Contains {}", originalArray.mkString(","))
+      //log.info("Contains {}", originalArray.mkString(","))
       sender() ! Done
 
-    case PrintBlock => println("OriginalArray " + originalArray.mkString(","))
+    case PrintBlock => println("OriginalArray created") //+ originalArray.mkString(","))
 
     case MinEMax => sender() ! MinMaxAggregator.minMax(originalArray)
 
     case SinkCompleted(a) => sortAndRedistribute(a)
 
-    case SortedArray(a)=> sortedArray = a
-      log.info("SortedArray " + sortedArray.mkString(","))
-      context.system.shutdown() //TODO check shutdown
+    case SortedArray(a, isComplete) =>
+      sortedArray = sortedArray ++ a
+      if (isComplete) {
+        log.info("SortedArray complete") //sortedArray.mkString(","))
+        context.system.shutdown() //TODO check shutdown
+      }
   }
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {
@@ -62,8 +65,17 @@ import it.unipd.trluca.mrlite.Messages._
     var start = 0
     members foreach { m=>
       val pp = portion + (if(rest>0) 1 else 0)
+      val block = sortedArr.slice(start, start+pp)
+      val destination = context.actorSelection(m.address + Consts.NODE_ACT_NAME)
 
-      context.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! SortedArray(sortedArr.slice(start, start+pp))
+      val list = block.grouped(Consts.CHUNK_SIZE).toList
+      for (i <- 0 until list.size) {
+        if (i != list.size-1) {
+          destination ! SortedArray(list(i), isComplete = false)
+        } else {
+          destination ! SortedArray(list(i), isComplete = true)
+        }
+      }
 
       start += pp
       rest-=1
@@ -103,8 +115,19 @@ import it.unipd.trluca.mrlite.Messages._
   }
 
   override def sink(s: Iterable[(Int, Seq[(Int, V2Address)])]): Unit = {
+    val destination = context.actorSelection(Cluster(context.system).state.members.head.address +
+      Consts.NODE_ACT_NAME + "/sinkreceiver")
+
     s foreach { item =>
-      context.actorSelection(Cluster(context.system).state.members.head.address + ConstStr.NODE_ACT_NAME + "/sinkreceiver") ! SinkMessage(item)
+      val list = item._2.grouped(Consts.CHUNK_SIZE).toList
+      for (i <- 0 until list.size) {
+        if (i != list.size-1) {
+          destination ! SinkMessage((item._1, list(i)), isComplete = false)
+        } else {
+          destination ! SinkMessage((item._1, list(i)), isComplete = true)
+        }
+      }
+
     }
   }
 }

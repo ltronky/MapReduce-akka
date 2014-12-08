@@ -3,7 +3,7 @@ package it.unipd.trluca.mrlite.aggregators
 import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
-import it.unipd.trluca.mrlite.{ConstStr, EngineStep}
+import it.unipd.trluca.mrlite.{Consts, EngineStep}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -18,7 +18,7 @@ class WorldClock extends Actor with Aggregator {
     case es:EngineStep =>
       originalSender = sender()
       members foreach { m =>
-        context.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! es
+        context.actorSelection(m.address + Consts.NODE_ACT_NAME) ! es
       }
   }
 

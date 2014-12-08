@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
 import it.unipd.trluca.mrlite.Messages.CreateBlock
-import it.unipd.trluca.mrlite.ConstStr
+import it.unipd.trluca.mrlite.Consts
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -23,7 +23,7 @@ class InitAggregator extends Actor with Aggregator {
       val portion = distArraySize / clusterSize
       var rest = distArraySize % clusterSize
       members foreach { member =>
-        context.actorSelection(member.address + ConstStr.NODE_ACT_NAME) !
+        context.actorSelection(member.address + Consts.NODE_ACT_NAME) !
           CreateBlock(portion + (if (rest > 0) 1 else 0), valueRange)
         rest -= 1
       }

@@ -9,9 +9,10 @@ import it.unipd.trluca.mrlite.aggregators._
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object ConstStr {
+object Consts {
   final val NODE_ACT_NAME = "/user/ablock"
   final val MAIN_TIMEOUT = Timeout(10.seconds) //TODO controllare non sia troppo breve per l'esecuzione
+  final val CHUNK_SIZE = 1000 //Because 128000byte is the limit for remote messages
 }
 
 case object StartExecution
@@ -21,7 +22,7 @@ case class SetDistArraySize(c:Config)
 
 class EntryPoint extends Actor with ActorLogging {
   def actorRefFactory = context
-  implicit val timeout = ConstStr.MAIN_TIMEOUT
+  implicit val timeout = Consts.MAIN_TIMEOUT
 
   var distArraySize = 0
   var valueRange = 0

@@ -7,15 +7,18 @@ import it.unipd.trluca.mrlite.V2Address
 
 import scala.collection.mutable.ArrayBuffer
 
-case class SinkMessage(c:(Int, Seq[(Int, V2Address)]))
+case class SinkMessage(c:(Int, Seq[(Int, V2Address)]), isComplete:Boolean)
 case class SinkCompleted(a:Array[(Int, Seq[(Int, V2Address)])])
 
 class SinkReceiver extends Actor with Aggregator {
   val results = ArrayBuffer.empty[(Int, Seq[(Int, V2Address)])]
-  val cSize = Cluster(context.system).state.members.size
+  var cSize = Cluster(context.system).state.members.size
 
   val handle = expect {
     case v:SinkMessage =>
+      if (!v.isComplete) {
+        cSize += 1
+      }
       results += v.c
       if (results.size >= cSize) processResult()
   }

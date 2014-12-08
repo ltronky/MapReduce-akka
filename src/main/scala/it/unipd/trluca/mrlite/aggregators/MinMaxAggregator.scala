@@ -3,7 +3,7 @@ package it.unipd.trluca.mrlite.aggregators
 import akka.actor.{Actor, ActorRef}
 import akka.cluster.Cluster
 import akka.contrib.pattern.Aggregator
-import it.unipd.trluca.mrlite.ConstStr
+import it.unipd.trluca.mrlite.Consts
 import it.unipd.trluca.mrlite.Messages.MinEMax
 
 import scala.collection.mutable.ArrayBuffer
@@ -30,7 +30,7 @@ class MinMaxAggregator extends Actor with Aggregator {
       val members = Cluster(context.system).state.members
       clusterSize = members.size
       members foreach { m =>
-        context.actorSelection(m.address + ConstStr.NODE_ACT_NAME) ! MinEMax
+        context.actorSelection(m.address + Consts.NODE_ACT_NAME) ! MinEMax
       }
   }
 

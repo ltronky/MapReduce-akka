@@ -18,7 +18,7 @@ case object Sink extends EngineStep
 
 
 class MRLiteEngine extends Actor with ActorLogging {
-  implicit val timeout = ConstStr.MAIN_TIMEOUT
+  implicit val timeout = Consts.MAIN_TIMEOUT
 
   var iteration: Int = 0
   var jobC:JobConstants = null
