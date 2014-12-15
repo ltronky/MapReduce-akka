@@ -14,10 +14,10 @@ class MapResultReceiverActor[K, V] extends Actor with ActorLogging {
 
   def receive = {
     case x:MapResult[K,V] =>
-        if (inc.contains(x.k))
-          inc(x.k) ++= x.v
-        else
-          inc += ((x.k, x.v))
+      if (inc.contains(x.k))
+        inc(x.k) ++= x.v
+      else
+        inc += ((x.k, x.v))
       sender() ! ResReceived
 
 

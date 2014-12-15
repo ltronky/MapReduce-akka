@@ -26,9 +26,8 @@ object MRJob {
   }
 }
 
-trait MRJob[K1,V1,K2,V2,K3,V3] {
-  this: Actor =>
-  def baseReceive:Receive = {
+trait MRJob[K1,V1,K2,V2,K3,V3] extends Actor {
+  def receive = {
     case StartJob(j) =>
       jobC = j
       results = Array.fill(jobC.clusterMembers.size)(new mutable.HashMap[K2, ArrayBuffer[V2]])
@@ -64,7 +63,7 @@ trait MRJob[K1,V1,K2,V2,K3,V3] {
       sink(output)
       sender() ! Done
 
-    case _=>
+//    case _=>
   }
 
   implicit val timeout = Consts.MAIN_TIMEOUT

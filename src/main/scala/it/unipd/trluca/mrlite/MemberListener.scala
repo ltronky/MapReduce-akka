@@ -30,7 +30,7 @@ class MemberListener extends Actor with ActorLogging {
       nodes += member.address
       log.info("Member is Up: {}. {} nodes in cluster", member.address, nodes.size)
       if (nodes.size == initCSize)
-        context.actorSelection(Cluster(context.system).state.members.head.address + "/user/ep") ! StartExecution
+        context.actorSelection("/user/ep") ! StartExecution
 
     case MemberRemoved(member, _) =>
       nodes -= member.address
@@ -48,8 +48,8 @@ class MemberListener extends Actor with ActorLogging {
         cluster.subscribe(self, classOf[LeaderChanged])
       }
 
-    case _: MemberEvent => // ignore
-    case _ => // ignore
+    //case _: MemberEvent => // ignore
+    case m:Any => log.info("MessageLost:" + m)// ignore
   }
 
 }

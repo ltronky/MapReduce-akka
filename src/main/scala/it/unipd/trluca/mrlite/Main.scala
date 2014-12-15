@@ -6,7 +6,7 @@ import scopt.OptionParser
 
 case class Config(debug:Boolean = false,
                   clusterSize: Int = -1,
-                  arraySize: Int = 10,
+                  arraySize: Int = -1,
                   valueRange:Int = 10000,
                   nodes: Seq[String] = Seq())
 
@@ -35,7 +35,6 @@ object Main {
     }
 
     parser.parse(args, Config()) map { c =>
-
       c.nodes foreach { h=>
         val Array(hostname, port) = h.split(":")
         val conf = ConfigFactory.parseString(s"akka.remote.netty.tcp.hostname=$hostname")

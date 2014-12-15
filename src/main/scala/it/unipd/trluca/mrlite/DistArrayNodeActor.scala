@@ -1,13 +1,13 @@
 package it.unipd.trluca.mrlite
 
-import akka.actor.{Props, ActorLogging, Actor}
+import akka.actor.{Address, Props, ActorLogging, Actor}
 import akka.cluster.Cluster
 import it.unipd.trluca.mrlite.aggregators._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object Messages {
-  case class CreateBlock(size: Int, valueRange:Int)
+  case class CreateBlock(size: Int, valueRange:Int, leaderAddress:Address)
   case object PrintBlock
   case object MinEMax
 }
@@ -21,15 +21,19 @@ import it.unipd.trluca.mrlite.Messages._
   var originalArray: Array[Int] = Array.empty[Int]
   var sortedArray: Array[(Int,V2Address)] = Array.empty
 
-  override def receive = localReceive orElse baseReceive
+  var leaderAddress:Address = null
+
+  override def receive = super.receive orElse localReceive
   def localReceive:Receive = {
-    case CreateBlock(size, valueRange) =>
+    case CreateBlock(size, valueRange, lAddress) =>
+      leaderAddress = lAddress
       originalArray = Array.fill(size)(Random.nextInt(valueRange))
 
-      if (Cluster(context.system).state.members.head.address == Cluster(context.system).selfAddress)
+      if (leaderAddress == Cluster(context.system).selfAddress)
         context.actorOf(Props[SinkReceiver], "sinkreceiver")
 
-      //log.info("Contains {}", originalArray.mkString(","))
+//      log.info("Contains {}", originalArray.mkString(","))
+      log.info("Array Block Created")
       sender() ! Done
 
     case PrintBlock => println("OriginalArray created") //+ originalArray.mkString(","))
@@ -41,9 +45,11 @@ import it.unipd.trluca.mrlite.Messages._
     case SortedArray(a, isComplete) =>
       sortedArray = sortedArray ++ a
       if (isComplete) {
-        log.info("SortedArray complete") //sortedArray.mkString(","))
+        log.info("SortedArray complete " + sortedArray.mkString(","))
         context.system.shutdown() //TODO check shutdown
       }
+//    case _=> //ignore
+    case m:Any => log.info("MessageLost:" + m)// ignore
   }
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {
@@ -115,8 +121,7 @@ import it.unipd.trluca.mrlite.Messages._
   }
 
   override def sink(s: Iterable[(Int, Seq[(Int, V2Address)])]): Unit = {
-    val destination = context.actorSelection(Cluster(context.system).state.members.head.address +
-      Consts.NODE_ACT_NAME + "/sinkreceiver")
+    val destination = context.actorSelection(leaderAddress + Consts.NODE_ACT_NAME + "/sinkreceiver")
 
     s foreach { item =>
       val list = item._2.grouped(Consts.CHUNK_SIZE).toList

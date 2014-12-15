@@ -19,16 +19,15 @@ class ResultDispatcher[K, V] extends Actor with Aggregator with ActorLogging {
   expectOnce {
     case c:SendResult[K, V] =>
       originalSender = sender()
-      expectedResultSize = c.clusterMembers.size
       var i = 0
       c.clusterMembers foreach { m =>
         val destination = context.actorSelection(m.address + Consts.NODE_ACT_NAME + "/mrra")
         val rMap = c.resArray(i).toMap
         rMap.keys foreach { k =>
           val list = rMap(k).grouped(Consts.CHUNK_SIZE).toList
-          expectedResultSize += (list.size-1)
-          for (i <- 0 until list.size) {
-            destination ! MapResult(k, list(i))
+          for (j <- 0 until list.size) {
+            expectedResultSize += 1
+            destination ! MapResult(k, list(j))
           }
         }
         i += 1

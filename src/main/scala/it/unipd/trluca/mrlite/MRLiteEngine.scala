@@ -75,6 +75,7 @@ class MRLiteEngine extends Actor with ActorLogging {
     case JobTerminated =>
       log.info("JobTerminated")
 
-    case _=>
+//    case _=>
+    case m:Any => log.info("MessageLost:" + m)// ignore
   }
 }

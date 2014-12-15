@@ -37,7 +37,7 @@ class EntryPoint extends Actor with ActorLogging {
 
     case StartExecution =>
       val initAggr = context.actorOf(Props[InitAggregator])
-      val response = initAggr ? InitArray(distArraySize, valueRange)
+      val response = initAggr ? InitArray(distArraySize, valueRange, Cluster(context.system).selfAddress)
       response map { Done =>
         self ! MinMax
       }
