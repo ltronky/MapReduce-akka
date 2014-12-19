@@ -53,6 +53,7 @@ import it.unipd.trluca.mrlite.Messages._
   }
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {
+    log.info("MidSink t=" + System.nanoTime())
     val ss = a.sortWith(_._1 < _._1)
     val sortedArr = {
       def xx(arr:Array[(Int, Seq[(Int, V2Address)])]):Seq[(Int, V2Address)] = {

@@ -26,7 +26,7 @@ class MRLiteEngine extends Actor with ActorLogging {
 
   def receive = {
     case st:StartJob => jobC = st.jC
-      log.info("StartJob")
+      log.info("StartJob t=" + System.nanoTime())
       val clockAct = context.actorOf(Props[WorldClock])
       val response = clockAct ? st
       response map { Done =>
@@ -41,7 +41,7 @@ class MRLiteEngine extends Actor with ActorLogging {
         self ! JobTerminated
 
     case ExecSource =>
-      log.info("Source")
+      log.info("PreSource t=" + System.nanoTime())
       val clockAct = context.actorOf(Props[WorldClock])
       val response = clockAct ? ExecSource
       response map { Done =>
@@ -49,7 +49,7 @@ class MRLiteEngine extends Actor with ActorLogging {
       }
 
     case ExecMap =>
-      log.info("Map")
+      log.info("PreMap t=" + System.nanoTime())
       val clockAct = context.actorOf(Props[WorldClock])
       val response = clockAct ? ExecMap
       response map { Done =>
@@ -57,7 +57,7 @@ class MRLiteEngine extends Actor with ActorLogging {
       }
 
     case ExecReduce =>
-      log.info("Reduce")
+      log.info("PreReduce t=" + System.nanoTime())
       val clockAct = context.actorOf(Props[WorldClock])
       val response = clockAct ? ExecReduce
       response map { Done =>
@@ -65,7 +65,7 @@ class MRLiteEngine extends Actor with ActorLogging {
       }
 
     case Sink =>
-      log.info("Sink")
+      log.info("PreSink t=" + System.nanoTime())
       val clockAct = context.actorOf(Props[WorldClock])
       val response = clockAct ? Sink
       response map { Done =>
@@ -73,7 +73,7 @@ class MRLiteEngine extends Actor with ActorLogging {
       }
 
     case JobTerminated =>
-      log.info("JobTerminated")
+      log.info("JobTerminated t=" + System.nanoTime())
 
 //    case _=>
     case m:Any => log.info("MessageLost:" + m)// ignore
