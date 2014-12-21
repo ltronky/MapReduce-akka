@@ -39,14 +39,7 @@ class MemberListener extends Actor with ActorLogging {
       log.info("Member detected as unreachable: {}", member)
 
     case LeaderChanged(address) =>
-      cluster unsubscribe self
-      if (Cluster(context.system).selfAddress == address.get) {
-        cluster.subscribe(self, classOf[MemberEvent])
-        cluster.subscribe(self, classOf[LeaderChanged])
-        log.info(s"leader changed: $address")
-      } else {
-        cluster.subscribe(self, classOf[LeaderChanged])
-      }
+      log.info(s"leader changed: $address")
 
     //case _: MemberEvent => // ignore
     case m:Any => log.info("MessageLost:" + m)// ignore

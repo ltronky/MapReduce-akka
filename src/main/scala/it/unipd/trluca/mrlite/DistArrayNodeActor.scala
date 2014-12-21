@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object Messages {
-  case class CreateBlock(size: Int, valueRange:Int, leaderAddress:Address)
+  case class CreateBlock(size: Int, valueRange:Int, mainNodeAddress:Address)
   case object PrintBlock
   case object MinEMax
 }
@@ -21,15 +21,15 @@ import it.unipd.trluca.mrlite.Messages._
   var originalArray: Array[Int] = Array.empty[Int]
   var sortedArray: Array[(Int,V2Address)] = Array.empty
 
-  var leaderAddress:Address = null
+  var mainNodeAddress:Address = null
 
   override def receive = super.receive orElse localReceive
   def localReceive:Receive = {
-    case CreateBlock(size, valueRange, lAddress) =>
-      leaderAddress = lAddress
+    case CreateBlock(size, valueRange, mAddress) =>
+      mainNodeAddress = mAddress
       originalArray = Array.fill(size)(Random.nextInt(valueRange))
 
-      if (leaderAddress == Cluster(context.system).selfAddress)
+      if (mainNodeAddress == Cluster(context.system).selfAddress)
         context.actorOf(Props[SinkReceiver], "sinkreceiver")
 
 //      log.info("Contains {}", originalArray.mkString(","))
@@ -122,7 +122,7 @@ import it.unipd.trluca.mrlite.Messages._
   }
 
   override def sink(s: Iterable[(Int, Seq[(Int, V2Address)])]): Unit = {
-    val destination = context.actorSelection(leaderAddress + Consts.NODE_ACT_NAME + "/sinkreceiver")
+    val destination = context.actorSelection(mainNodeAddress + Consts.NODE_ACT_NAME + "/sinkreceiver")
 
     s foreach { item =>
       val list = item._2.grouped(Consts.CHUNK_SIZE).toList

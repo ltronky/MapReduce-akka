@@ -8,7 +8,7 @@ import it.unipd.trluca.mrlite.Consts
 
 import scala.collection.mutable.ArrayBuffer
 
-case class InitArray(arraySize:Int, valueRange:Int, leaderAddress:Address)
+case class InitArray(arraySize:Int, valueRange:Int, mainNodeAddress:Address)
 
 class InitAggregator extends Actor with Aggregator {
   val results = ArrayBuffer.empty[Unit]
@@ -16,7 +16,7 @@ class InitAggregator extends Actor with Aggregator {
   var clusterSize:Int = 0
 
   expectOnce {
-    case InitArray(distArraySize, valueRange, leaderAddress) =>
+    case InitArray(distArraySize, valueRange, mainNodeAddress) =>
       val members = Cluster(context.system).state.members
       clusterSize = members.size
       originalSender = sender()
@@ -24,7 +24,7 @@ class InitAggregator extends Actor with Aggregator {
       var rest = distArraySize % clusterSize
       members foreach { member =>
         context.actorSelection(member.address + Consts.NODE_ACT_NAME) !
-          CreateBlock(portion + (if (rest > 0) 1 else 0), valueRange, leaderAddress)
+          CreateBlock(portion + (if (rest > 0) 1 else 0), valueRange, mainNodeAddress)
         rest -= 1
       }
   }

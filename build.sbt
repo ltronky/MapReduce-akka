@@ -1,6 +1,6 @@
 name := """TesiMRLiteScala"""
 
-val akkaVersion = "2.3.7"
+val akkaVersion = "2.3.8"
 
 fork in run := true
 
