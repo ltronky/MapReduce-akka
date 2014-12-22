@@ -45,7 +45,7 @@ import it.unipd.trluca.mrlite.Messages._
     case SortedArray(a, isComplete) =>
       sortedArray = sortedArray ++ a
       if (isComplete) {
-        log.info("SortedArray complete " + sortedArray.mkString(","))
+        //log.info("SortedArray complete " + sortedArray.mkString(","))
         context.system.shutdown() //TODO check shutdown
       }
 //    case _=> //ignore
@@ -87,6 +87,7 @@ import it.unipd.trluca.mrlite.Messages._
       start += pp
       rest-=1
     }
+    log.info("JobTerminated t=" + System.nanoTime())
   }
 
 ////////
