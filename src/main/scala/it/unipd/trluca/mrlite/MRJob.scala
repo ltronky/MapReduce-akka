@@ -33,12 +33,10 @@ trait MRJob[K1,V1,K2,V2,K3,V3] extends Actor {
       results = Array.fill(jobC.clusterMembers.size)(new mutable.HashMap[K2, ArrayBuffer[V2]])
       sender() ! Done
 
-    case ExecSource =>
-      src = source()
-      sender() ! Done
-
     case ExecMap =>
       val orSender = sender()
+
+      val src = source()
       if (src != null)
         src foreach {x => mapper(x._1, x._2, mSink)}
 
@@ -56,12 +54,9 @@ trait MRJob[K1,V1,K2,V2,K3,V3] extends Actor {
         res.keySet foreach { k =>
           reducer(k, res(k), output)
         }
+        sink(output)
         orSender ! Done
       }
-
-    case Sink =>
-      sink(output)
-      sender() ! Done
 
 //    case _=>
   }
@@ -72,7 +67,6 @@ trait MRJob[K1,V1,K2,V2,K3,V3] extends Actor {
 
   var jobC:JobConstants = null
 
-  var src: Iterable[(K1, V1)] = null
   var results:Array[mutable.HashMap[K2,ArrayBuffer[V2]]] = null
   val mSink = (k:K2,v:V2) => {MRJob.insert[K2, V2](results(partition(k) % jobC.clusterMembers.size), k, v)}
   val output:ArrayBuffer[(K3,V3)] = ArrayBuffer.empty

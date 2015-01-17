@@ -8,7 +8,7 @@ import it.unipd.trluca.mrlite.Messages.MinEMax
 
 import scala.collection.mutable.ArrayBuffer
 
-case object GetMinEMax
+case object GetMinAndMax
 case class MM(min:Int, max:Int)
 
 object MinMaxAggregator {
@@ -25,7 +25,7 @@ class MinMaxAggregator extends Actor with Aggregator {
   var clusterSize:Int = 0
 
   expectOnce {
-    case GetMinEMax =>
+    case GetMinAndMax =>
       originalSender = sender()
       val members = Cluster(context.system).state.members
       clusterSize = members.size

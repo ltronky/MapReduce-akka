@@ -44,7 +44,7 @@ class EntryPoint extends Actor with ActorLogging {
 
     case MinMax =>
       val aggr = context.actorOf(Props[MinMaxAggregator])
-      val response = (aggr ? GetMinEMax).mapTo[MM]
+      val response = (aggr ? GetMinAndMax).mapTo[MM]
       response map { res:MM =>
         mmm = res.max-res.min
         log.info("Min " + res.min.toString + " & Max " + res.max.toString)
