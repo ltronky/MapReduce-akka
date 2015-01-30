@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object Consts {
   final val NODE_ACT_NAME = "/user/ablock"
-  final val MAIN_TIMEOUT = Timeout(10.seconds) //TODO controllare non sia troppo breve per l'esecuzione
+  final val MAIN_TIMEOUT = Timeout(10.seconds)
   final val CHUNK_SIZE = 1000 //Because 128000byte is the limit for remote messages
 }
 

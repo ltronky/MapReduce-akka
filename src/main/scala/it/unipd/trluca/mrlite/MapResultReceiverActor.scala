@@ -22,6 +22,5 @@ class MapResultReceiverActor[K, V] extends Actor with ActorLogging {
 
 
     case MapResultGet => sender() ! inc.toMap
-    case _=> log.info("Messaggio ignorato MapResultReceiverActor")
   }
 }

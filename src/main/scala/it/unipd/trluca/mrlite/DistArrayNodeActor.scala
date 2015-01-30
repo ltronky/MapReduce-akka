@@ -45,11 +45,9 @@ import it.unipd.trluca.mrlite.Messages._
     case SortedArray(a, isComplete) =>
       sortedArray = sortedArray ++ a
       if (isComplete) {
-        //log.info("SortedArray complete " + sortedArray.mkString(","))
+//        log.info("SortedArray complete " + sortedArray.mkString(","))
         context.system.shutdown() //TODO check shutdown
       }
-//    case _=> //ignore
-    case m:Any => log.info("MessageLost:" + m)// ignore
   }
 
   def sortAndRedistribute(a:Array[(Int, Seq[(Int, V2Address)])]): Unit = {

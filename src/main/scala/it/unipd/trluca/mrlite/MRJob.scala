@@ -57,8 +57,6 @@ trait MRJob[K1,V1,K2,V2,K3,V3] extends Actor {
         sink(output)
         orSender ! Done
       }
-
-//    case _=>
   }
 
   implicit val timeout = Consts.MAIN_TIMEOUT
